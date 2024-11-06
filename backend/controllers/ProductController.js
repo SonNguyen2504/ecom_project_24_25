@@ -82,6 +82,41 @@ const getProductById = async(req, res) => {
     }
 }
 
+const updateProduct = async (req, res) => {
+    const { id } = req.params;
+    const { name, description, price, image, category } = req.body;
+
+    try {
+        const product = await Product.findById(id);
+
+        if(!product) {
+            return res.status(404).json({
+                success: false,
+                message: 'Product not found',
+            });
+        }
+
+        product.name = name;
+        product.description = description;
+        product.price = price;
+        product.image = image;
+        product.category = category;
+
+        await product.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Update product successfully',
+            data: product,
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: err.message,
+        });
+    }
+}
+
 const deleteProduct = async (req, res) => {
     const { id } = req.params;
 
@@ -112,5 +147,6 @@ module.exports = {
     getAllProduct,
     createProduct, 
     getProductById,
+    updateProduct,
     deleteProduct,
 };

@@ -4,6 +4,7 @@ const {
     getAllProduct,
     createProduct,
     getProductById,
+    updateProduct,
     deleteProduct,
 } = require('../controllers/ProductController');
 const {
@@ -13,7 +14,9 @@ const {
 
 router.get('/', getAllProduct);
 router.post('/', verifyToken, isAdmin, createProduct);
-router.get('/:id', getProductById);
-router.delete('/:id', deleteProduct);
+router.route('/:id')
+    .get(getProductById)
+    .put(verifyToken, isAdmin, updateProduct)
+    .delete(verifyToken, isAdmin, deleteProduct);
 
 module.exports = router;  
