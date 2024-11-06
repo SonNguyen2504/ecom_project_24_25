@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        /* Reset styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Body styling */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f3f3f3;
+        }
+
+        /* Container styling */
+        .container {
+            width: 320px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header styling */
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Input styling */
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        /* Button styling */
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Sign up button styling */
+        .signup-button {
+            background-color: #007bff;
+            margin-top: 10px;
+        }
+
+        .signup-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Error styling */
+        .error {
+            color: #ff4d4d;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <button class="signup-button" onclick="redirectToSignup()">Sign Up</button>
+        <div id="error" class="error"></div>
+    </div>
+
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const errorDiv = document.getElementById("error");
+
+            try {
+                const response = await fetch("http://localhost:3030/api/auth/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Lưu token vào localStorage
+                    localStorage.setItem("token", data.token);
+                    alert('Đăng nhập thành công!');
+                    // Chuyển hướng sang trang index.html
+                    window.location.href = "index.html";
+                } else {
+                    errorDiv.textContent = data.message || "Đăng nhập thất bại";
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                errorDiv.textContent = "An error occurred. Please try again later.";
+            }
+        });
+
+        // Hàm chuyển hướng đến trang đăng ký
+        function redirectToSignup() {
+            window.location.href = "signup.html";
+        }
+    </script>
+</body>
+
+</html>

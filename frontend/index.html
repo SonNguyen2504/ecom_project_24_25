@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+    <style>
+        /* Reset styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Body styling */
+        body {
+            background-color: #f3f3f3;
+        }
+
+        /* Navbar styling */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: #fff;
+        }
+
+        /* Brand logo styling */
+        .navbar .brand {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* Navbar links */
+        .navbar .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .navbar .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .navbar .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .navbar .auth-buttons button {
+            padding: 8px 12px;
+            background-color: #fff;
+            color: #4CAF50;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .navbar .auth-buttons button:hover {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="brand">EcomWeb</div>
+        <div class="nav-links">
+            <a href="shop.html">Cửa hàng</a>
+            <a href="reviews.html">Đánh giá</a>
+            <a href="comments.html">Bình luận</a>
+            <!-- Thêm các link khác nếu cần -->
+        </div>
+        <div class="auth-buttons">
+            <button id="registerButton" onclick="location.href='signup.html'">Đăng ký</button>
+            <button id="loginButton" onclick="location.href='login.html'">Đăng nhập</button>
+            <button id="logoutButton" style="display: none;">Đăng xuất</button>
+        </div>
+    </div>
+
+    <h2>Welcome to the Home Page</h2>
+
+    <script>
+        // Kiểm tra token trong localStorage
+        const token = localStorage.getItem("token");
+
+        if (token) {
+            // Nếu đã đăng nhập, hiển thị nút Đăng xuất và ẩn các nút Đăng nhập, Đăng ký
+            document.getElementById("logoutButton").style.display = "inline-block";
+            document.getElementById("registerButton").style.display = "none";
+            document.getElementById("loginButton").style.display = "none";
+        }
+
+        // Xử lý sự kiện Đăng xuất
+        document.getElementById("logoutButton").addEventListener("click", function () {
+            localStorage.removeItem("token");
+            window.location.reload(); // Reload lại trang để cập nhật giao diện
+        });
+    </script>
+</body>
+
+</html>
