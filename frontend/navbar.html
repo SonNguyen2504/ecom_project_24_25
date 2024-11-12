@@ -1,0 +1,38 @@
+<!-- navbar.html -->
+<div class="navbar">
+    <div class="brand">EcomWeb</div>
+    <div class="nav-links">
+        <a href="index.html">Trang chủ</a>
+        <a href="shop.html">Cửa hàng</a>
+        <a href="reviews.html">Đánh giá</a>
+        <a href="comments.html">Bình luận</a>
+    </div>
+    <div class="auth-buttons">
+        <button id="registerButton" onclick="location.href='signup.html'">Đăng ký</button>
+        <button id="loginButton" onclick="location.href='login.html'">Đăng nhập</button>
+        <button id="logoutButton" style="display: none;">Đăng xuất</button>
+        <div class="cart-icon" onclick="location.href='cart.html'">
+            🛒 <span id="cartCount" class="cart-count">0</span>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Định dạng cho biểu tượng giỏ hàng */
+    .cart-icon {
+        position: relative;
+        cursor: pointer;
+        font-size: 20px;
+    }
+
+    .cart-count {
+        position: absolute;
+        top: -8px;
+        right: -10px;
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 5px;
+        font-size: 12px;
+    }
+</style>

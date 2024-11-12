@@ -65,44 +65,23 @@
         .navbar .auth-buttons button:hover {
             background-color: #e0e0e0;
         }
+
+        /* center h2*/
+        h2 {
+            text-align: center;
+        }
     </style>
 </head>
 
 <body>
-    <!-- Navbar -->
-    <div class="navbar">
-        <div class="brand">EcomWeb</div>
-        <div class="nav-links">
-            <a href="shop.html">Cửa hàng</a>
-            <a href="reviews.html">Đánh giá</a>
-            <a href="comments.html">Bình luận</a>
-            <!-- Thêm các link khác nếu cần -->
-        </div>
-        <div class="auth-buttons">
-            <button id="registerButton" onclick="location.href='signup.html'">Đăng ký</button>
-            <button id="loginButton" onclick="location.href='login.html'">Đăng nhập</button>
-            <button id="logoutButton" style="display: none;">Đăng xuất</button>
-        </div>
-    </div>
+    <!-- Container cho navbar -->
+    <div id="navbar-container"></div>
 
     <h2>Welcome to the Home Page</h2>
 
+    <script src="./js/navbar.js"></script>
     <script>
-        // Kiểm tra token trong localStorage
-        const token = localStorage.getItem("token");
-
-        if (token) {
-            // Nếu đã đăng nhập, hiển thị nút Đăng xuất và ẩn các nút Đăng nhập, Đăng ký
-            document.getElementById("logoutButton").style.display = "inline-block";
-            document.getElementById("registerButton").style.display = "none";
-            document.getElementById("loginButton").style.display = "none";
-        }
-
-        // Xử lý sự kiện Đăng xuất
-        document.getElementById("logoutButton").addEventListener("click", function () {
-            localStorage.removeItem("token");
-            window.location.reload(); // Reload lại trang để cập nhật giao diện
-        });
+        
     </script>
 </body>
 

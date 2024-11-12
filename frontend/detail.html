@@ -107,24 +107,28 @@
             font-weight: bold;
             margin-top: 10px;
         }
+
+        /* Add to Cart Button */
+        .add-to-cart {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .add-to-cart:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 
 <body>
-    <!-- Navbar -->
-    <div class="navbar">
-        <div class="brand">EcomWeb</div>
-        <div class="nav-links">
-            <a href="shop.html">Cửa hàng</a>
-            <a href="reviews.html">Đánh giá</a>
-            <a href="comments.html">Bình luận</a>
-        </div>
-        <div class="auth-buttons">
-            <button id="registerButton" onclick="location.href='signup.html'">Đăng ký</button>
-            <button id="loginButton" onclick="location.href='login.html'">Đăng nhập</button>
-            <button id="logoutButton" style="display: none;">Đăng xuất</button>
-        </div>
-    </div>
+    <!-- Container cho navbar -->
+    <div id="navbar-container"></div>
 
     <!-- Product Detail Section -->
     <div class="product-detail">
@@ -134,25 +138,14 @@
             <p id="productDescription">Mô tả sản phẩm</p>
             <p id="productCategory">Phân loại: </p>
             <p class="price" id="productPrice">Giá: </p>
+            <button class="add-to-cart" onclick="addToCart()">Thêm vào giỏ hàng</button>
         </div>
     </div>
 
+    <script src="./js/navbar.js"></script>
     <script>
-        // Kiểm tra token trong localStorage
+        // Lấy token từ localStorage
         const token = localStorage.getItem("token");
-
-        if (token) {
-            // Nếu đã đăng nhập, hiển thị nút Đăng xuất và ẩn các nút Đăng nhập, Đăng ký
-            document.getElementById("logoutButton").style.display = "inline-block";
-            document.getElementById("registerButton").style.display = "none";
-            document.getElementById("loginButton").style.display = "none";
-        }
-
-        // Xử lý sự kiện Đăng xuất
-        document.getElementById("logoutButton").addEventListener("click", function () {
-            localStorage.removeItem("token");
-            window.location.reload();
-        });
 
         // Lấy productId từ URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -171,9 +164,35 @@
             document.getElementById("productPrice").innerText = `Giá: ${product.data.price}đ`;
         };
 
+        // Hàm Thêm vào giỏ hàng
+        const addToCart = async () => {
+            if (!token) {
+                return alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+            }
+        
+            const response = await fetch(`http://localhost:3030/api/cart/add-to-cart/${productId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "auth-token": token
+                }
+            });
+        
+            const data = await response.json();
+        
+            if (response.ok) {
+                alert(`Thêm vào giỏ hàng thành công! Sản phẩm ID: ${productId}`);
+                updateCartCount(); // Cập nhật lại số lượng giỏ hàng ngay lập tức
+            } else {
+                alert(`Thêm vào giỏ hàng thất bại! ${data.message}`);
+            }
+        };
+        
+
         // Gọi hàm renderProductDetail
         renderProductDetail();
     </script>
+
 </body>
 
 </html>
