@@ -6,13 +6,18 @@ const {
     getCategoryById,
     updateCategory,
     deleteCategory,
-} = require('../controllers/CategoryController');   
+} = require('../controllers/CategoryController');  
+
+const {
+    isAdmin,
+    verifyToken,
+} = require('../middlewares/auth');
 
 router.get('/', getAllCategory);
 router.post('/', createCategory);
 router.route('/:id')
-    .get(getCategoryById)
-    .put(updateCategory)
-    .delete(deleteCategory);
+    .get(getCategoryById, verifyToken, isAdmin)
+    .put(updateCategory, verifyToken, isAdmin)
+    .delete(deleteCategory, verifyToken, isAdmin);
 
 module.exports = router;

@@ -1,11 +1,12 @@
 const router = require('express').Router();
 
-const { 
+const {
     getAllProduct,
     createProduct,
     getProductById,
     updateProduct,
     deleteProduct,
+    searchProduct,
 } = require('../controllers/ProductController');
 const {
     verifyToken,
@@ -14,6 +15,7 @@ const {
 
 router.get('/', getAllProduct);
 router.post('/', verifyToken, isAdmin, createProduct);
+router.get('/search', searchProduct);
 router.route('/:id')
     .get(getProductById)
     .put(verifyToken, isAdmin, updateProduct)
