@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử đơn hàng</title>
+    <style>
+        /* Reset styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f3f3f3;
+        }
+
+        .order-list-container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-item {
+            border-bottom: 1px solid #ddd;
+            padding: 15px 0;
+            cursor: pointer;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .order-item h3 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .order-item p {
+            color: #555;
+            margin: 5px 0;
+        }
+
+        .order-item .status {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        /* Overlay styling */
+    .order-detail-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .order-detail-container {
+        width: 90%;
+        max-width: 700px;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow-y: auto;
+        max-height: 90%;
+    }
+
+    .order-detail-container h3 {
+        margin-bottom: 15px;
+        color: #333;
+        text-align: center;
+    }
+
+    .order-detail-container p {
+        margin: 10px 0;
+        color: #555;
+    }
+
+    .order-detail-container .close-button {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 18px;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: #333;
+    }
+
+    .order-detail-container .close-button:hover {
+        color: #4CAF50;
+    }
+
+    .product-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .product-list li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+    }
+
+    .product-list li:last-child {
+        border-bottom: none;
+    }
+
+    .product-image {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 4px;
+        margin-right: 15px;
+        border: 1px solid #ddd;
+    }
+
+    .product-details {
+        flex: 1;
+    }
+
+    .product-details strong {
+        display: block;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .product-details span {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .total-price {
+        font-weight: bold;
+        color: #4CAF50;
+        font-size: 18px;
+        text-align: right;
+    }
+    </style>
+</head>
+
+<body>
+    <!-- Container cho navbar -->
+    <div id="navbar-container"></div>
+
+    <!-- Container cho danh sách đơn hàng -->
+    <div class="order-list-container" id="orderListContainer">
+        <h2>Lịch sử đơn hàng</h2>
+        <!-- Danh sách đơn hàng sẽ được render tại đây -->
+    </div>
+
+    <!-- Overlay hiển thị chi tiết đơn hàng -->
+    <div class="order-detail-overlay" id="orderDetailOverlay">
+        <div class="order-detail-container" id="orderDetailContainer">
+            <button class="close-button" id="closeOverlayButton">✖</button>
+            <!-- Thông tin chi tiết đơn hàng sẽ được render tại đây -->
+        </div>
+    </div>
+
+    <script src="./js/navbar.js"></script>
+    <script>
+        // Lấy token từ localStorage
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            alert("Vui lòng đăng nhập để xem lịch sử đơn hàng!");
+            window.location.href = "login.html";
+        }
+
+        // Hàm lấy danh sách đơn hàng
+        const fetchOrders = async () => {
+            try {
+                const response = await fetch('http://localhost:3030/api/order/list-orders', {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "auth-token": token
+                    }
+                });
+                const data = await response.json();
+                //console.log(data);
+                const orders = data.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                if (response.ok) {
+                    const orderListContainer = document.getElementById("orderListContainer");
+                    orders.forEach(order => {
+                        const orderItem = document.createElement("div");
+                        orderItem.id = order._id;
+                        orderItem.classList.add("order-item");
+                        orderItem.innerHTML = `
+                            <h3>Mã đơn hàng: ${order._id}</h3>
+                            <p>Ngày đặt: ${new Date(order.createdAt).toLocaleDateString()}</p>
+                            <p>Tổng tiền: ${order.totalPrice.toLocaleString()} VND</p>
+                            <p class="status">Trạng thái: ${order.status}</p>
+                        `;
+                        orderItem.addEventListener("click", () => fetchOrderDetails(order._id));
+                        orderListContainer.appendChild(orderItem);
+                    });
+                } else {
+                    alert("Không thể tải danh sách đơn hàng: " + data.message);
+                }
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+            }
+        };
+
+        // Hàm lấy chi tiết đơn hàng
+        const fetchOrderDetails = async (orderId) => {
+            try {
+                const response = await fetch(`http://localhost:3030/api/order/${orderId}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "auth-token": token
+                    }
+                });
+                const data = await response.json();
+                const order = data.data;
+                console.log(order);
+
+                if (response.ok) {
+                    const orderDetailContainer = document.getElementById("orderDetailContainer");
+                    orderDetailContainer.innerHTML = `
+                        <button class="close-button" id="closeOverlayButton">✖</button>
+                        <h3>Chi tiết đơn hàng</h3>
+                        <p><strong>Mã đơn hàng:</strong> ${order._id}</p>
+                        <p><strong>Ngày đặt:</strong> ${new Date(order.createdAt).toLocaleDateString()}</p>
+                        <p><strong>Địa chỉ:</strong> ${order.address}</p>
+                        <p><strong>Số điện thoại:</strong> ${order.phone}</p>
+                        <p><strong>Phương thức thanh toán:</strong> ${order.paymentMethod}</p>
+                        <p><strong>Sản phẩm:</strong></p>
+                        <ul class="product-list">
+                            ${order.orderItems.map(item => `
+                                <li>
+                                    <img class="product-image" src="${item.product.image}" alt="${item.product.name}">
+                                    <div class="product-details">
+                                        <strong>${item.product.name}</strong>
+                                        <span>Số lượng: ${item.quantity}</span>
+                                        <span>Giá: ${item.product.price.toLocaleString()} VND</span>
+                                    </div>
+                                </li>
+                            `).join('')}
+                        </ul>
+                        <p class="total-price">Tổng tiền: ${order.totalPrice.toLocaleString()} VND</p>
+                    `;
+
+                    document.getElementById("orderDetailOverlay").style.display = "flex";
+
+                    // Đóng overlay
+                    document.getElementById("closeOverlayButton").addEventListener("click", closeOverlay);
+                    document.getElementById("orderDetailOverlay").addEventListener("click", (e) => {
+                        if (e.target.id === "orderDetailOverlay") closeOverlay();
+                    });
+                } else {
+                    alert("Không thể tải chi tiết đơn hàng: " + data.message);
+                }
+            } catch (error) {
+                console.error("Error fetching order details:", error);
+            }
+        };
+
+        // Hàm đóng overlay
+        const closeOverlay = () => {
+            document.getElementById("orderDetailOverlay").style.display = "none";
+        };
+
+
+        // Gọi hàm fetchOrders khi trang tải
+        fetchOrders();
+    </script>
+</body>
+
+</html>

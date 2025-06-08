@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f3f3;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        h1, h3 {
+            color: #4CAF50;
+            text-align: center;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .order-item img {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .order-details {
+            flex: 1;
+            margin-left: 20px;
+        }
+
+        .order-details h4 {
+            margin: 0 0 5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: none;
+        }
+
+        .total-price {
+            font-size: 20px;
+            color: #4CAF50;
+            text-align: right;
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Thanh toán</h1>
+        <div id="order-items">
+            <!-- Danh sách sản phẩm sẽ được thêm vào đây -->
+        </div>
+        <div class="total-price">
+            Tổng tiền: <span id="totalPrice">0</span> VND
+        </div>
+
+        <h3>Thông tin giao hàng</h3>
+        <form id="checkout-form">
+            <div class="form-group">
+                <label for="address">Địa chỉ giao hàng</label>
+                <textarea id="address" name="address" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="phone">Số điện thoại</label>
+                <input type="tel" id="phone" name="phone" required>
+            </div>
+            <div class="form-group">
+                <label for="paymentMethod">Hình thức thanh toán</label>
+                <select id="paymentMethod" name="paymentMethod" required>
+                    <option value="COD">COD (Thanh toán khi nhận hàng)</option>
+                    <option value="Card">Thẻ ngân hàng</option>
+                </select>
+            </div>
+            <button type="submit" class="submit-btn">Đặt hàng</button>
+        </form>
+    </div>
+
+    <script>
+        const token = localStorage.getItem("token");
+
+        // Lấy ID giỏ hàng từ URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const cartId = urlParams.get("cartId");
+
+        // Hàm hiển thị thông tin đơn hàng
+        const renderOrderItems = async () => {
+            if (!token) {
+                alert("Bạn cần đăng nhập để tiếp tục!");
+                window.location.href = "login.html";
+                return;
+            }
+
+            const response = await fetch(`http://localhost:3030/api/cart`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "auth-token": token
+                }
+            });
+
+            const data = await response.json();
+            const cartItems = data.data.cartItems || [];
+            const orderItemsContainer = document.getElementById("order-items");
+            orderItemsContainer.innerHTML = "";
+
+            let totalPrice = 0;
+
+            cartItems.forEach(item => {
+                const itemTotal = item.product.price * item.quantity;
+                totalPrice += itemTotal;
+
+                const orderItem = document.createElement("div");
+                orderItem.classList.add("order-item");
+
+                orderItem.innerHTML = `
+                    <img src="${item.product.image}" alt="${item.product.name}">
+                    <div class="order-details">
+                        <h4>${item.product.name}</h4>
+                        <p>Số lượng: ${item.quantity}</p>
+                        <p>Giá: ${item.product.price.toLocaleString()} VND</p>
+                    </div>
+                    <div class="item-total">
+                        Tổng: ${itemTotal.toLocaleString()} VND
+                    </div>
+                `;
+
+                orderItemsContainer.appendChild(orderItem);
+            });
+
+            document.getElementById("totalPrice").innerText = totalPrice.toLocaleString();
+        };
+
+        // Hàm xử lý đặt hàng
+        const handleCheckout = async (event) => {
+            event.preventDefault();
+
+            const total = document.getElementById("totalPrice").innerText;
+            if (total === "0") {
+                alert("Giỏ hàng không được để trống!");
+                return;
+            }
+
+            const address = document.getElementById("address").value;
+            const phone = document.getElementById("phone").value;
+            const paymentMethod = document.getElementById("paymentMethod").value;
+
+            try {
+                const response = await fetch(`http://localhost:3030/api/order/create-order/${cartId}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "auth-token": token
+                    },
+                    body: JSON.stringify({ address, phone, paymentMethod })
+                });
+
+                if (response.ok) {
+                    alert("Đặt hàng thành công!");
+                    window.location.href = "index.html";
+                } else {
+                    alert("Đặt hàng thất bại. Vui lòng thử lại.");
+                }
+            } catch (error) {
+                console.error("Lỗi khi đặt hàng:", error);
+                alert("Đã xảy ra lỗi, vui lòng thử lại sau!");
+            }
+        };
+
+        // Gọi hàm hiển thị đơn hàng khi tải trang
+        renderOrderItems();
+
+        // Xử lý form submit
+        const checkoutForm = document.getElementById("checkout-form");
+        checkoutForm.addEventListener("submit", handleCheckout);
+    </script>
+</body>
+
+</html>

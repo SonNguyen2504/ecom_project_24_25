@@ -11,6 +11,7 @@ function loadNavbar() {
                 document.getElementById("logoutButton").style.display = "inline-block";
                 document.getElementById("registerButton").style.display = "none";
                 document.getElementById("loginButton").style.display = "none";
+                document.getElementById("orderHistoryButton").style.display = "inline-block"; // Hiển thị nút lịch sử đơn hàng
             }
 
             // Đếm số lượng sản phẩm trong giỏ từ localStorage (ví dụ)
