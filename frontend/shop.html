@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop Page</title>
+    <title>Cửa hàng</title>
     <style>
         /* Reset styling */
         * {
@@ -17,53 +17,6 @@
         /* Body styling */
         body {
             background-color: #f3f3f3;
-        }
-
-        /* Navbar styling */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: #fff;
-        }
-
-        /* Brand logo styling */
-        .navbar .brand {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        /* Navbar links */
-        .navbar .nav-links {
-            display: flex;
-            gap: 15px;
-        }
-
-        .navbar .nav-links a {
-            color: white;
-            text-decoration: none;
-            font-size: 16px;
-        }
-
-        .navbar .auth-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .navbar .auth-buttons button {
-            padding: 8px 12px;
-            background-color: #fff;
-            color: #4CAF50;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .navbar .auth-buttons button:hover {
-            background-color: #e0e0e0;
         }
 
         /* Product container styling */
@@ -83,6 +36,7 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
+            cursor: pointer;
         }
 
         .product img {
@@ -106,6 +60,11 @@
             color: #4CAF50;
             font-weight: bold;
         }
+
+        .product:hover {
+            transform: translateY(-5px);
+            transition: 0.3s;
+        }
     </style>
 </head>
 
@@ -115,34 +74,53 @@
 
     <h1 style="text-align:center; margin:20px 0;">Welcome to Shop Page</h1>
 
+    <!-- Search Bar -->
+    <div style="text-align:center; margin:20px;">
+        <input type="text" id="search-input" placeholder="Nhập từ khóa tìm kiếm..."
+            style="padding: 10px; width: 60%; border: 1px solid #ddd; border-radius: 4px;">
+        <button id="search-btn"
+            style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Tìm kiếm
+        </button>
+    </div>
+
     <!-- Product Section -->
     <div class="product-container">
     </div>
 
+
     <script src="./js/navbar.js"></script>
     <script>
-        // Hiển thị sản phẩm
-        const renderPage = async () => {
-            const response = await fetch('http://localhost:3030/api/product');
+        // Hiển thị danh sách sản phẩm
+        const renderPage = async (searchKeyword = "") => {
+            let url = 'http://localhost:3030/api/product';
+            if (searchKeyword) {
+                url = `http://localhost:3030/api/product/search?name=${encodeURIComponent(searchKeyword)}`;
+            }
+
+            const response = await fetch(url);
             const data = await response.json();
 
-            const products = data.data;
-
-            console.log(products);
+            const products = data.data || [];
 
             const productContainer = document.querySelector(".product-container");
+
+            if (products.length === 0) {
+                productContainer.innerHTML = `<p style="text-align:center; color: #555;">Không tìm thấy sản phẩm nào!</p>`;
+                return;
+            }
 
             let productHTML = "";
 
             products.forEach(product => {
                 productHTML += `
-                <div class="product" id="${product._id}">
-                    <img src="${product.image}" alt="${product.name}">
-                    <h3>Tên sản phẩm: ${product.name}</h3>
-                    <p>Mô tả: ${product.description}</p>
-                    <p class="price">Giá: ${product.price}đ</p>
-                </div>
-                `;
+            <div class="product" id="${product._id}">
+                <img src="${product.image}" alt="${product.name}">
+                <h3>Tên sản phẩm: ${product.name}</h3>
+                <p>Mô tả: ${product.description}</p>
+                <p class="price">Giá: ${product.price.toLocaleString()} VND</p>
+            </div>
+        `;
             });
 
             productContainer.innerHTML = productHTML;
@@ -153,13 +131,21 @@
             window.location.href = `detail.html?id=${productId}`;
         };
 
-        // Gọi hàm renderPage
+        // Gọi hàm renderPage khi tải trang
         renderPage();
 
+        // Xử lý sự kiện tìm kiếm
+        document.getElementById("search-btn").addEventListener("click", () => {
+            const searchInput = document.getElementById("search-input").value.trim();
+            renderPage(searchInput);
+        });
+
+        // Xử lý sự kiện click vào sản phẩm
         document.querySelector(".product-container").addEventListener("click", (event) => {
             const productId = event.target.closest(".product").id;
             seeProductDetail(productId);
         });
+
 
 
     </script>
