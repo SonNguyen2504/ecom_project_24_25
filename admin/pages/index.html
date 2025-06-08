@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        /* Reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+        }
+
+        /* Full page layout */
+        .full-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+
+        /* Login form */
+        .login-container {
+            background-color: #fff;
+            padding: 20px 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .login-container h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .login-container button:hover {
+            background-color: #45a049;
+        }
+
+        /* Admin layout */
+        .admin-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #333;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            padding-top: 20px;
+            padding-left: 10px;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: #ccc;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 4px;
+            display: block;
+        }
+
+        .sidebar a:hover {
+            background-color: #444;
+            color: #fff;
+        }
+
+        .sidebar a.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .logout-button {
+            width: 240px;
+            padding: 10px 15px;
+            background-color: #f44336;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .logout-button:hover {
+            background-color: #e53935;
+        }
+
+        .main-content {
+            flex: 1;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .main-content h1 {
+            margin: 0;
+            color: #333;
+        }
+
+        .main-content p {
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Login Section -->
+    <div id="loginPage" class="full-page">
+        <div class="login-container">
+            <h1>Admin Login</h1>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button id="loginButton">Login</button>
+            <p id="errorMessage" style="color: red; display: none;"></p>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Section -->
+    <div id="dashboard" class="admin-container" style="display: none;">
+        <div class="sidebar">
+            <h3>Admin Dashboard</h3>
+            <a href="./category.html" id="categoryLink">Quản lý Danh mục</a>
+            <a href="./order.html" id="orderLink">Quản lý Đơn hàng</a>
+            <a href="./product.html" id="productLink">Quản lý Sản phẩm</a>
+            <a href="./user.html" id="userLink">Quản lý Người dùng</a>
+            <button class="logout-button" id="logoutButton">Đăng xuất</button>
+        </div>
+        <div class="main-content">
+            <h1>Chào mừng đến với Admin Dashboard</h1>
+            <p>Hãy chọn một mục từ thanh điều hướng bên trái để bắt đầu quản lý.</p>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = "http://localhost:3030/api/auth/login";
+
+        // Check login state
+        const token = localStorage.getItem("token");
+        if (token) {
+            showDashboard();
+        } else {
+            showLogin();
+        }
+
+        function showLogin() {
+            document.getElementById("loginPage").style.display = "flex";
+            document.getElementById("dashboard").style.display = "none";
+        }
+
+        function showDashboard() {
+            document.getElementById("loginPage").style.display = "none";
+            document.getElementById("dashboard").style.display = "flex";
+        }
+
+        // Handle login
+        document.getElementById("loginButton").addEventListener("click", async () => {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const errorMessage = document.getElementById("errorMessage");
+
+            errorMessage.style.display = "none";
+
+            if (!username || !password) {
+                errorMessage.textContent = "Vui lòng nhập đầy đủ thông tin.";
+                errorMessage.style.display = "block";
+                return;
+            }
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem("token", data.token);
+                    showDashboard();
+                } else {
+                    errorMessage.textContent = data.message || "Đăng nhập thất bại!";
+                    errorMessage.style.display = "block";
+                }
+            } catch (error) {
+                console.error("Login error:", error);
+                errorMessage.textContent = "Đã xảy ra lỗi, vui lòng thử lại.";
+                errorMessage.style.display = "block";
+            }
+        });
+
+        // Handle logout
+        document.getElementById("logoutButton").addEventListener("click", () => {
+            localStorage.removeItem("token");
+            showLogin();
+        });
+
+        // Protect admin features
+        const adminLinks = document.querySelectorAll(".sidebar a");
+        adminLinks.forEach(link => {
+            link.addEventListener("click", (e) => {
+                if (!localStorage.getItem("token")) {
+                    e.preventDefault();
+                    alert("Bạn phải đăng nhập bằng tài khoản Admin để truy cập!");
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

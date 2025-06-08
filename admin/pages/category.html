@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Danh mục</title>
+    <style>
+        /* Reset */
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            box-sizing: border-box;
+        }
+
+        /* Admin layout */
+        .admin-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #333;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            padding-left: 10px;
+            position: fixed;
+            /* Sidebar luôn cố định */
+            top: 0;
+            left: 0;
+            bottom: 0;
+            height: 100vh;
+            /* Chiều cao luôn chiếm toàn bộ màn hình */
+            overflow-y: auto;
+            /* Nếu sidebar có nội dung dài, cho phép cuộn */
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: #ccc;
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 4px;
+            display: block;
+        }
+
+        .sidebar a:hover {
+            background-color: #444;
+            color: #fff;
+        }
+
+        .sidebar a.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .logout-button {
+            width: 240px;
+            padding: 10px 15px;
+            background-color: #f44336;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .logout-button:hover {
+            background-color: #e53935;
+        }
+
+        .main-content {
+            margin-left: 250px; /* Thêm khoảng cách để tránh chồng lấn với sidebar */
+            flex: 1;
+            background-color: #f4f4f4;
+            padding: 20px;
+            overflow-y: auto;
+            height: 100vh; /* Đảm bảo nội dung cuộn dọc */
+        }
+
+        .main-content h1 {
+            margin: 0 0 20px;
+            color: #333;
+        }
+
+        .main-content .add-product-btn {
+            margin-bottom: 15px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .main-content .add-product-btn:hover {
+            background-color: #45a049;
+        }
+
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .product-table th,
+        .product-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .product-table th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .product-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .product-table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .action-button {
+            padding: 5px 10px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .update-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .delete-button {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .product-image {
+            max-width: 100px;
+            max-height: 100px;
+            object-fit: cover;
+        }
+
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .close-button:hover {
+            color: red;
+        }
+
+        .modal-content label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        .modal-content input,
+        .modal-content textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .modal-content button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="sidebar">
+            <h3>Admin Dashboard</h3>
+            <a href="./category.html" id="categoryLink">Quản lý Danh mục</a>
+            <a href="./order.html" id="orderLink">Quản lý Đơn hàng</a>
+            <a href="./product.html" id="productLink">Quản lý Sản phẩm</a>
+            <a href="./user.html" id="userLink">Quản lý Người dùng</a>
+            <button class="logout-button" id="logoutButton">Đăng xuất</button>
+        </div>
+        <div class="main-content">
+            <h1>Danh sách Danh mục</h1>
+            <button class="add-product-btn" id="addCategoryButton">Thêm danh mục</button>
+            <table class="product-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên danh mục</th>
+                        <th>Mô tả</th>
+                        <th>Ngày tạo</th>
+                        <th>Ngày cập nhật</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody">
+                    <!-- Dữ liệu sản phẩm sẽ được thêm vào đây -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal for updating category -->
+    <div id="updateCategoryModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-button" id="closeModalButton">&times;</span>
+            <h2>Cập nhật Danh mục</h2>
+            <form id="updateCategoryForm">
+                <input type="hidden" id="categoryId" />
+                <label for="categoryName">Tên danh mục</label>
+                <input type="text" id="categoryName" placeholder="Nhập tên sản phẩm" required />
+
+                <label for="categoryDescription">Mô tả:</label>
+                <textarea id="categoryDescription" placeholder="Nhập mô tả sản phẩm" required></textarea>
+
+                <button type="submit" class="action-button update-button">Lưu thay đổi</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for adding category -->
+    <div id="addCategoryModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-button" id="closeAddModalButton">&times;</span>
+            <h2>Thêm Danh mục</h2>
+            <form id="addCategoryForm">
+                <label for="addCategoryName">Tên Danh mục:</label>
+                <input type="text" id="addCategoryName" placeholder="Nhập tên sản phẩm" required />
+
+                <label for="addCategoryDescription">Mô tả:</label>
+                <textarea id="addCategoryDescription" placeholder="Nhập mô tả sản phẩm" required></textarea>
+
+                <button type="submit" class="action-button update-button">Thêm danh mục</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Highlight the active link
+        document.querySelectorAll(".sidebar a").forEach(link => {
+            if (link.href === window.location.href) {
+                link.classList.add("active");
+            }
+        });
+
+        // Fetch product data
+        async function fetchCategories() {
+            try {
+                const response = await fetch("http://localhost:3030/api/category");
+                const data = await response.json();
+
+                const categories = data.data;
+
+                console.log(categories);
+
+                if (response.ok) {
+                    renderCategories(categories);
+                } else {
+                    console.error("Failed to fetch categories:", categories.message);
+                }
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+            }
+        }
+
+        // Render product data into the table
+        function renderCategories(categories) {
+            const tableBody = document.getElementById("productTableBody");
+            tableBody.innerHTML = ""; // Clear previous data
+
+            categories.forEach(category => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${category._id}</td>
+                    <td>${category.name}</td>
+                    <td>${category.description}</td>
+                    <td>${new Date(category.createdAt).toLocaleString()}</td>
+                    <td>${new Date(category.updatedAt).toLocaleString()}</td>
+                    <td>
+                        <button class="action-button update-button" onclick="updateCategory('${category._id}')">Cập nhật</button>
+                        <button class="action-button delete-button" onclick="deleteCategory('${category._id}')">Xóa</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Open modal function
+        function openUpdateModal(category) {
+            const modal = document.getElementById("updateCategoryModal");
+            modal.style.display = "flex";
+
+            // Populate form fields with category data
+            document.getElementById("categoryId").value = category._id;
+            document.getElementById("categoryName").value = category.name;
+            document.getElementById("categoryDescription").value = category.description;
+        }
+
+        // Close modal function
+        document.getElementById("closeModalButton").addEventListener("click", () => {
+            document.getElementById("updateCategoryModal").style.display = "none";
+        });
+
+        // Submit update form
+        document.getElementById("updateCategoryForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const categoryId = document.getElementById("categoryId").value;
+            const updatedCategory = {
+                name: document.getElementById("categoryName").value,
+                description: document.getElementById("categoryDescription").value,
+            };
+
+            try {
+                const response = await fetch(`http://localhost:3030/api/category/${categoryId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "auth-token": `${localStorage.getItem("token")}`,
+                    },
+                    body: JSON.stringify(updatedCategory),
+                });
+
+                if (response.ok) {
+                    alert("Cập nhật danh mục thành công!");
+                    document.getElementById("updateCategoryModal").style.display = "none";
+                    fetchCategories(); // Reload the product list
+                } else {
+                    const errorData = await response.json();
+                    alert("Cập nhật danh mục thất bại: " + errorData.message);
+                }
+            } catch (error) {
+                console.error("Error updating product:", error);
+            }
+        });
+
+        // Update product button handler
+        async function updateCategory(categoryId) {
+            try {
+                const response = await fetch(`http://localhost:3030/api/category/${categoryId}`, {
+                    headers: {
+                        "auth-token": `${localStorage.getItem("token")}`,
+                    },
+                });
+
+                if (response.ok) {
+                    const category = await response.json();
+                    openUpdateModal(category.data); // Open modal with product data
+                } else {
+                    alert("Không thể tải thông tin danh mục để cập nhật.");
+                }
+            } catch (error) {
+                console.error("Error fetching category details:", error);
+            }
+        }
+
+        // Delete product
+        async function deleteCategory(categoryId) {
+            if (confirm("Bạn có chắc chắn muốn xóa danh mục này?")) {
+                try {
+                    const response = await fetch(`http://localhost:3030/api/category/${categoryId}`, {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "auth-token": `${localStorage.getItem("token")}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        alert("Xóa danh mục thành công!");
+                        fetchCategories();
+                    } else {
+                        const errorData = await response.json();
+                        alert("Xóa danh mục thất bại: " + errorData.message);
+                    }
+                } catch (error) {
+                    console.error("Error deleting product:", error);
+                }
+            }
+        }
+
+        // Open Add Product Modal
+        document.getElementById("addCategoryButton").addEventListener("click", () => {
+            document.getElementById("addCategoryModal").style.display = "flex";
+        });
+
+        // Close Add Product Modal
+        document.getElementById("closeAddModalButton").addEventListener("click", () => {
+            document.getElementById("addCategoryModal").style.display = "none";
+        });
+
+        // Submit Add Product Form
+        document.getElementById("addCategoryForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const newCategory = {
+                name: document.getElementById("addCategoryName").value,
+                description: document.getElementById("addCategoryDescription").value,
+            };
+
+            console.log(newCategory);
+
+            try {
+                const response = await fetch("http://localhost:3030/api/category", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "auth-token": `${localStorage.getItem("token")}`,
+                    },
+                    body: JSON.stringify(newCategory),
+                });
+
+                if (response.ok) {
+                    alert("Thêm danh mục thành công!");
+                    document.getElementById("addCategoryModal").style.display = "none";
+                    fetchCategories(); // Reload the product list
+                } else {
+                    const errorData = await response.json();
+                    alert("Thêm danh mục thất bại: " + errorData.message);
+                }
+            } catch (error) {
+                console.error("Error adding product:", error);
+            }
+        });
+
+        // Logout function
+        document.getElementById("logoutButton").addEventListener("click", () => {
+            localStorage.removeItem("token");
+            window.location.href = "./index.html";
+        });
+
+        // Check token and fetch data
+        const token = localStorage.getItem("token");
+        if (token) {
+            fetchCategories();
+        } else {
+            alert("Bạn phải đăng nhập để truy cập!");
+            window.location.href = "./index.html";
+        }
+    </script>
+</body>
+
+</html>
