@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Detail</title>
+    <title>Thông tin sản phẩm</title>
     <style>
         /* Reset styling */
         * {
@@ -17,51 +17,6 @@
         /* Body styling */
         body {
             background-color: #f3f3f3;
-        }
-
-        /* Navbar styling */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: #fff;
-        }
-
-        .navbar .brand {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .navbar .nav-links {
-            display: flex;
-            gap: 15px;
-        }
-
-        .navbar .nav-links a {
-            color: white;
-            text-decoration: none;
-            font-size: 16px;
-        }
-
-        .navbar .auth-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .navbar .auth-buttons button {
-            padding: 8px 12px;
-            background-color: #fff;
-            color: #4CAF50;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .navbar .auth-buttons button:hover {
-            background-color: #e0e0e0;
         }
 
         /* Product detail styling */
@@ -123,6 +78,89 @@
         .add-to-cart:hover {
             background-color: #45a049;
         }
+
+        /* Styling for Feedback Section */
+        #feedbackContainer {
+            margin-top: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .feedback-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .feedback-item:last-child {
+            border-bottom: none;
+        }
+
+        .feedback-rating {
+            font-size: 14px;
+            color: #FFD700;
+            /* Gold for star-like effect */
+            margin-bottom: 5px;
+        }
+
+        .feedback-comment {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .feedback-user {
+            font-size: 14px;
+            color: #555;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        /* Styling for Feedback Form */
+        #feedbackForm {
+            margin-top: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #feedbackForm h3 {
+            margin-bottom: 15px;
+            font-size: 20px;
+            color: #333;
+        }
+
+        #feedbackForm textarea,
+        #feedbackForm select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        #feedbackForm button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #feedbackForm button:hover {
+            background-color: #45a049;
+        }
     </style>
 </head>
 
@@ -141,6 +179,24 @@
             <button class="add-to-cart" onclick="addToCart()">Thêm vào giỏ hàng</button>
         </div>
     </div>
+
+    <!-- Feedback Form Section -->
+    <div id="feedbackForm">
+        <h3>Hãy cho chúng tôi biết cảm nhận của bạn tại đây:</h3>
+        <textarea id="feedbackComment" rows="4" placeholder="Viết đánh giá của bạn..."></textarea>
+        <select id="feedbackRating">
+            <option value="">Chọn điểm đánh giá (1-5)</option>
+            <option value="1">1 - Rất tệ</option>
+            <option value="2">2 - Tệ</option>
+            <option value="3">3 - Bình thường</option>
+            <option value="4">4 - Tốt</option>
+            <option value="5">5 - Rất tốt</option>
+        </select>
+        <button id="submitFeedback">Gửi đánh giá</button>
+    </div>
+
+
+    <div id="feedbackContainer"></div>
 
     <script src="./js/navbar.js"></script>
     <script>
@@ -161,7 +217,63 @@
             document.getElementById("productName").innerText = `Tên sản phẩm: ${product.data.name}`;
             document.getElementById("productDescription").innerText = `Mô tả: ${product.data.description}`;
             document.getElementById("productCategory").innerText = `Phân loại: ${product.data.category.name}`;
-            document.getElementById("productPrice").innerText = `Giá: ${product.data.price}đ`;
+            document.getElementById("productPrice").innerText = `Giá: ${product.data.price.toLocaleString()} VND`;
+        };
+
+        // Hàm hiển thị feedback sản phẩm
+        const renderFeedback = async () => {
+            const response = await fetch(`http://localhost:3030/api/feedback/${productId}`);
+            const feedbacks = await response.json();
+
+            const feedbackContainer = document.getElementById("feedbackContainer");
+            feedbackContainer.innerHTML = "<h3>Đánh giá sản phẩm</h3>"; // Tiêu đề danh sách feedback
+
+            feedbacks.data.forEach(feedback => {
+                const feedbackElement = document.createElement("div");
+                feedbackElement.classList.add("feedback-item");
+                feedbackElement.innerHTML = `
+                    <div class="feedback-rating">Điểm: ${"★".repeat(feedback.rating)} (${feedback.rating})</div>
+                    <div class="feedback-comment">${feedback.comment}</div>
+                    <div class="feedback-user">— ${feedback.user.username}</div>
+                `;
+                feedbackContainer.appendChild(feedbackElement);
+            });
+        };
+
+        // Hàm gửi đánh giá sản phẩm
+        const submitFeedback = async () => {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                return alert("Vui lòng đăng nhập để gửi đánh giá!");
+            }
+
+            const comment = document.getElementById("feedbackComment").value.trim();
+            const rating = document.getElementById("feedbackRating").value;
+
+            if (!comment || !rating) {
+                return alert("Vui lòng nhập đầy đủ nội dung và chọn điểm đánh giá!");
+            }
+
+            const response = await fetch(`http://localhost:3030/api/feedback/${productId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "auth-token": token
+                },
+                body: JSON.stringify({ rating, comment })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert("Đánh giá của bạn đã được gửi thành công!");
+                renderFeedback(); // Render lại danh sách đánh giá
+                document.getElementById("feedbackComment").value = ""; // Reset form
+                document.getElementById("feedbackRating").value = ""; // Reset form
+            } else {
+                alert(`Gửi đánh giá thất bại! ${data.message}`);
+            }
         };
 
         // Hàm Thêm vào giỏ hàng
@@ -169,7 +281,7 @@
             if (!token) {
                 return alert("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
             }
-        
+
             const response = await fetch(`http://localhost:3030/api/cart/add-to-cart/${productId}`, {
                 method: "POST",
                 headers: {
@@ -177,9 +289,9 @@
                     "auth-token": token
                 }
             });
-        
+
             const data = await response.json();
-        
+
             if (response.ok) {
                 alert(`Thêm vào giỏ hàng thành công! Sản phẩm ID: ${productId}`);
                 updateCartCount(); // Cập nhật lại số lượng giỏ hàng ngay lập tức
@@ -187,10 +299,15 @@
                 alert(`Thêm vào giỏ hàng thất bại! ${data.message}`);
             }
         };
-        
+
+        // Thêm sự kiện click cho nút gửi đánh giá
+        document.getElementById("submitFeedback").addEventListener("click", submitFeedback);
 
         // Gọi hàm renderProductDetail
         renderProductDetail();
+
+        // Gọi hàm renderFeedback
+        renderFeedback();
     </script>
 
 </body>
