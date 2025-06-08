@@ -1,9 +1,8 @@
 const Product = require('../models/Product');
-const Category = require('../models/Category');
 
 const getAllProduct = async (req, res) => {
     try {
-        const allProduct = await Product.find();
+        const allProduct = await Product.find().populate('category');
 
         if(!allProduct) {
             return res.status(404).json({
@@ -57,7 +56,7 @@ const getProductById = async(req, res) => {
     const { id } = req.params;
 
     try {
-        const product = await Product.findById(id);
+        const product = await Product.findById(id).populate('category');
 
         if(!product) {
             return res.status(404).json({
@@ -65,9 +64,6 @@ const getProductById = async(req, res) => {
                 message: 'Product not found',
             });
         }
-
-        const category = await Category.findById(product.category);
-        product.category = category;
 
         return res.status(200).json({
             success: true,
@@ -143,10 +139,41 @@ const deleteProduct = async (req, res) => {
     }
 }
 
+const searchProduct = async (req, res) => {
+    const { name } = req.query;
+
+    try {
+        const products = await Product.find({ 
+            name: { $regex: name, $options: 'i' } 
+        });
+
+        if(!products) {
+            return res.status(404).json({
+                success: false,
+                message: 'Product not found',
+            });
+        }
+
+        // console.log(products);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Search product successfully',
+            data: products,
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: err.message,
+        });
+    }
+}
+
 module.exports = {
     getAllProduct,
     createProduct, 
     getProductById,
     updateProduct,
     deleteProduct,
+    searchProduct,
 };
